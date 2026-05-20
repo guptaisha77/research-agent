@@ -5,7 +5,7 @@ This is the Summariser Agent.
 Its job is to take the raw search results from the Search Agent
 and use Groq's AI to condense them into a clean, readable summary.
 
-This is the SECOND agent that runs in our multi-agent pipeline.
+This is the THIRD agent that runs in our multi-agent pipeline.
 It feeds its summary into the Fact Checker agent next.
 """
 
