@@ -5,7 +5,7 @@ This is the Search Agent.
 Its job is to take a question from the user, search the web using Tavily,
 and return a clean list of relevant sources.
 
-This is the SECOND agent that runs in our multi-agent pipeline.
+This is the FIRST agent that runs in our multi-agent pipeline.
 It feeds its results into the Summariser agent next.
 """
 

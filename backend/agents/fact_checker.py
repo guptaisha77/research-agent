@@ -6,7 +6,7 @@ Its job is to look at the summary from the Summariser Agent
 and cross-reference it against the original sources to check
 for any inaccuracies or unsupported claims.
 
-This is the FOURTH agent that runs in our multi-agent pipeline.
+This is the THIRD agent that runs in our multi-agent pipeline.
 It feeds its findings into the Writer agent next.
 """
 

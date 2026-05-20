@@ -15,16 +15,6 @@ import os
 # This must run before any os.getenv() calls
 load_dotenv()
 
-# ── Environment Validation ─────────────────────────────────────
-def _validate_env_vars():
-    """Validate that all required environment variables are set."""
-    required = ["GROQ_API_KEY", "TAVILY_API_KEY", "GITHUB_TOKEN", "GITHUB_USERNAME"]
-    missing = [var for var in required if not os.getenv(var)]
-    if missing:
-        raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
-
-_validate_env_vars()
-
 # ── LLM ────────────────────────────────────────────────────────
 # Shared Groq LLM instance used by all agents
 llm = ChatGroq(
@@ -38,12 +28,7 @@ search_client = TavilyClient(
     api_key=os.getenv("TAVILY_API_KEY")
 )
 
-# ── GitHub ──────────────────────────────────────────────────────
-# GitHub credentials for the GitHub Agent
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
-
-# ── Settings ────────────────────────────────────────────────────
+# ── Search settings ─────────────────────────────────────────────
 MAX_SEARCH_RESULTS = 5       # number of sources the search agent fetches
 MAX_SUMMARY_WORDS  = 200     # target length for the summariser agent
 MAX_CONTENT_CHARS  = 300     # characters of each source used for fact checking
