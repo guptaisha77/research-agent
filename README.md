@@ -60,23 +60,44 @@ Final report + sources
 
 ## Architecture
 
-The orchestration logic lives in `backend/graph.py`.
-It defines a LangGraph state graph with four nodes:
+The orchestration logic lives in `backend/graph.py` and the runtime service lives in `backend/pipeline.py`.
 
-- `search`
-- `summariser`
-- `fact_checker`
-- `writer`
+### `backend/graph.py` — graph definition
+- Declares the LangGraph pipeline as a state graph.
+- Defines the nodes and transitions between:
+  - `search`
+  - `summariser`
+  - `fact_checker`
+  - `writer`
+- Acts as the **blueprint** for the research flow.
 
-State flows through the graph so each agent can update the shared research state and pass results to the next step.
+### `backend/pipeline.py` — execution and streaming
+- Runs the same agents in sequence.
+- Produces the actual research state and results.
+- Powers both the standard API and the SSE streaming endpoint.
+- Converts the graph blueprint into runtime behavior.
 
-The API layer in `backend/main.py` accepts a research request, invokes the graph pipeline, and returns the final report and sources.
+### How they relate
+
+```text
+backend/graph.py          backend/pipeline.py
+   (flow definition)           (runtime engine)
+          |                          |
+          v                          v
+Search -> Summariser -> Fact Checker -> Writer
+```
+
+- `graph.py` is the wiring diagram.
+- `pipeline.py` is the machine that executes the wiring and reports progress.
+
+The API layer in `backend/main.py` accepts a research request, invokes the pipeline service, and returns the final report and sources.
 
 ## Project structure
 
 - `backend/`
   - `main.py` — FastAPI application and API endpoint definitions
-  - `graph.py` — LangGraph pipeline construction and orchestration
+  - `pipeline.py` — service-layer orchestration and SSE streaming support
+  - `graph.py` — LangGraph pipeline definition and node graph
   - `config.py` — shared configuration, API clients, and constants
   - `agents/` — modular agent implementations
     - `search.py`
@@ -92,10 +113,13 @@ The API layer in `backend/main.py` accepts a research request, invokes the graph
 - LangGraph for agent orchestration
 - Groq via `langchain-groq` for LLM interactions
 - Tavily for search
+- React + TypeScript + Vite + Tailwind CSS for the frontend demo
 - Pydantic for request validation
 - Uvicorn for the development server
 
 ## Running the project
+
+### Backend
 
 1. Create and activate a Python virtual environment.
 2. Install backend dependencies:
@@ -119,10 +143,28 @@ cd backend
 python main.py
 ```
 
-5. Use the API:
+### Frontend
+
+1. Install frontend dependencies using Bun:
+
+```bash
+cd frontend
+bun install
+```
+
+2. Start Vite:
+
+```bash
+bun run dev
+```
+
+The frontend app proxies `GET /research` and `GET /research/stream` to the backend and displays live pipeline progress.
+
+### API endpoints
 
 - `GET /health` — health check
-- `POST /research` — run the full research pipeline
+- `POST /research` — run the full research pipeline and return the final report
+- `GET /research/stream` — live SSE pipeline updates for frontend progress
 
 Example request:
 
@@ -140,6 +182,22 @@ The `/research` endpoint returns JSON with:
 - `report` — the generated research report
 - `sources` — the source documents retrieved by the search agent
 - `status` — the pipeline state
+
+## Live pipeline streaming
+
+The backend also exposes a live pipeline stream at:
+
+- `GET /research/stream?query=<your query>`
+
+This endpoint emits Server-Sent Events (SSE) with stage updates for:
+
+- `search`
+- `summariser`
+- `fact_checker`
+- `writer`
+- final `pipeline` completion
+
+A frontend can use an `EventSource` connection to render live progress while the research pipeline executes.
 
 ## Next steps and roadmap
 
